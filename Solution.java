@@ -66,8 +66,104 @@ public class Solution {
 	 * 
 	 * @return TRUE is all motion parallel steps are valid (according to the rules of the problem)
 	 */
-	public boolean isValid() {
-		throw new Error("TO BE COMPLETED");
+	public boolean per(byte b1, byte b2) {
+		boolean reponse = false;
+		switch(b1) {
+		case Solution.N:
+			if((b2 == Solution.E)||(b2 == Solution.W)) {reponse = true;}
+			break;
+		case Solution.S:
+			if((b2 == Solution.E)||(b2 == Solution.W)) {reponse = true;}
+			break;
+		case Solution.E:
+			if((b2 == Solution.N)||(b2 == Solution.S)) {reponse = true;}
+			break;
+		case Solution.W:
+			if((b2 == Solution.N)||(b2  == Solution.S)) {reponse = true;}
+			break;
+		}
+		return reponse;
+	}
+	public boolean isValid(Instance instance) {
+		boolean valid = true;
+		int makespan = this.makespan();
+		int nrobots = instance.n;
+		Coordinates current = new Coordinates(instance.starts.getPositions());
+		int[][] utile = new int[nrobots][nrobots];
+		byte[] pas;
+		int x, y;
+		for(int k = 0; k < nrobots; k++) {
+			for(int j = 0; j < nrobots; j++) {
+				if(k==j) {utile[k][j] = 1;}else {utile[k][j] = 0;}
+			}
+		}
+		int k = 0;
+		while((k < makespan)&&(valid)) {
+			pas = this.steps.get(k);
+			for(int i = 0; i < nrobots; i++) {
+				x = current.getX(i);
+				y = current.getY(i);
+				switch(pas[i]) {
+					case Solution.FIXED:
+						break;
+					case Solution.N:
+						//current.increaseY(i);
+						y++;
+						break;
+					case Solution.S:
+						//current.decreaseY(i);
+						y--;
+						break;
+					case Solution.E:
+						//current.increaseX(i);
+						x++;
+						break;
+					case Solution.W:
+						//current.decreaseX(i);
+						x--;
+						break;
+				}
+				for(int p = 0; p < nrobots; p++) {
+					if(p!= i) {
+						if((x == current.getX(p))&&(y == current.getY(p))&&(per(pas[i], pas[p]))) {valid = false;}
+					}
+				}
+			}
+			for(int i = 0; i < nrobots; i++) {
+				switch(pas[i]) {
+				case Solution.FIXED:
+					break;
+				case Solution.N:
+					current.increaseY(i);
+					break;
+				case Solution.S:
+					current.decreaseY(i);
+					break;
+				case Solution.E:
+					current.increaseX(i);
+					break;
+				case Solution.W:
+					current.decreaseX(i);
+					break;
+			}
+			}
+			for(int i = 0; i < nrobots; i++) {
+				for(int j = i+1; j < nrobots; j++) {
+					if((current.getX(i) == current.getX(j))&&(current.getY(i) == current.getY(j))) {utile[i][j] = 1;}else{utile[i][j] = 0;}
+					if(utile[i][j] == 1) {valid = false;}
+				}
+				for(int p = 0; p <instance.obstacles.n; p++) {
+					if((current.getX(i) == instance.obstacles.getX(p))&&(current.getY(i) == instance.obstacles.getY(p))) {valid = false;}
+				}
+			}
+			k++;
+		}
+		if(valid) {
+			for(int p = 0; p < nrobots; p++) {
+				if((current.getX(p) == instance.targets.getX(p))&&(current.getY(p) == instance.targets.getY(p))) {}else {valid = false;}
+			}
+		}
+		return valid;
 	}
 	
 	public String toString() {
